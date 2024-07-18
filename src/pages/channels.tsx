@@ -1,6 +1,6 @@
-import { useCallback, useEffect, useMemo, useState } from "react"
+import { SetStateAction, useCallback, useEffect, useMemo, useState } from "react"
 import styles from "./channels.less"
-import { Button, Input, Modal, Space, Table, Tooltip, message } from "antd"
+import { Button, Input, Modal, Space, Table, Tooltip, message, ConfigProvider } from "antd"
 import {
   CheckCircleFilled,
   CheckOutlined,
@@ -13,6 +13,7 @@ import {
   SafetyOutlined,
   SettingOutlined,
   WarningFilled,
+  SearchOutlined,
 } from "@ant-design/icons"
 import classNames from "classnames"
 import { ColumnsType } from "antd/es/table"
@@ -22,6 +23,8 @@ import { api } from "@/modules/axios.config"
 import { defaultQueryClient } from "@/components/ReactQueryClientProvider"
 import { AxiosResponse } from "axios"
 import Option from "./option"
+import zhCN from 'antd/es/locale/zh_CN';
+
 
 const _columns: ColumnsType<any> = [
   {
@@ -30,19 +33,85 @@ const _columns: ColumnsType<any> = [
     dataIndex: "No",
   },
   {
-    title: "Name",
+    title: "分组",
     width: 150,
-    dataIndex: "Name",
+    dataIndex: "Category",
+    filterDropdown: ({ setSelectedKeys, selectedKeys, confirm, clearFilters  }) => (
+      <div style={{ padding: 8 }}>
+        <Input
+          placeholder="搜索分组"
+          value={selectedKeys[0]}
+          onChange={e => setSelectedKeys(e.target.value ? [e.target.value] : [])}
+          onPressEnter={() => confirm()}
+          style={{ marginBottom: 8, display: 'block' }}
+        />
+        <Space>
+          <Button
+            type="primary"
+            onClick={() => confirm()}
+            icon={<SearchOutlined />}
+            size="small"
+            style={{ width: 90 }}
+          >
+            搜索
+          </Button>
+          <Button onClick={() => {
+            clearFilters && clearFilters();
+            confirm()
+          }
+            } size="small" style={{ width: 90 }}>
+            重置
+          </Button>
+        </Space>
+      </div>
+    ),
+    filterIcon: filtered => <SearchOutlined style={{ color: filtered ? '#1890ff' : undefined }} />,
+    onFilter: (value, record) => record.Category.toLowerCase().includes(value.toString().toLowerCase()),
   },
   {
-    title: "Live",
+    title: "频道名",
+    width: 150,
+    dataIndex: "Name",
+    filterDropdown: ({ setSelectedKeys, selectedKeys, confirm, clearFilters  }) => (
+      <div style={{ padding: 8 }}>
+        <Input
+          placeholder="搜索频道名"
+          value={selectedKeys[0]}
+          onChange={e => setSelectedKeys(e.target.value ? [e.target.value] : [])}
+          onPressEnter={() => confirm()}
+          style={{ marginBottom: 8, display: 'block' }}
+        />
+        <Space>
+          <Button
+            type="primary"
+            onClick={() => confirm()}
+            icon={<SearchOutlined />}
+            size="small"
+            style={{ width: 90 }}
+          >
+            搜索
+          </Button>
+          <Button onClick={() => {
+            clearFilters && clearFilters();
+            confirm()
+          }} size="small" style={{ width: 90 }}>
+            重置
+          </Button>
+        </Space>
+      </div>
+    ),
+    filterIcon: filtered => <SearchOutlined style={{ color: filtered ? '#1890ff' : undefined }} />,
+    onFilter: (value, record) => record.Name.toLowerCase().includes(value.toString().toLowerCase()),
+  },
+  {
+    title: "源地址",
     dataIndex: "URL",
     render(value) {
       return <span className={styles.liveUrl}>{value}</span>
     },
   },
   {
-    title: "M3U8",
+    title: "频道M3U8地址",
     dataIndex: "M3U8",
     render(value, record: ChannelInfo, index) {
       const Icons = [
@@ -72,13 +141,13 @@ const _columns: ColumnsType<any> = [
     },
   },
   {
-    title: "Proxy",
+    title: "代理",
     width: 80,
     render(dom, rec) {
       return (
         <Space>
-          {rec.Proxy && <CheckOutlined title="Stream proxied" />}
-          {!!rec.ProxyUrl && <SafetyOutlined  title="Connect via proxy" />}
+          {rec.Proxy && <CheckOutlined title="代理串流" />}
+          {!!rec.ProxyUrl && <SafetyOutlined  title="通过代理连接" />}
         </Space>
       )
     },
@@ -109,9 +178,20 @@ export default function Channels() {
   const [playlistUrl, setPlayListUrl] = useState("")
   const [copied, setCopied] = useState(false)
   const [editingChannel, setEditingChannel] = useState<ChannelInfo>()
+  const [selectedRowKeys, setSelectedRowKeys] = useState<React.Key[]>([]);
+
+const onSelectChange = (newSelectedRowKeys: React.Key[]) => {
+  setSelectedRowKeys(newSelectedRowKeys);
+};
+
+const rowSelection = {
+  selectedRowKeys,
+  onChange: onSelectChange,
+};
+const hasSelected = selectedRowKeys.length > 0
 
   useEffect(() => {
-    document.title = "Channel List - LiveTV!"
+    document.title = "频道列表 - LiveTV!"
   }, [])
 
   const doAddChannel = useMutation(
@@ -126,7 +206,7 @@ export default function Channels() {
         defaultQueryClient.invalidateQueries("channelList")
       },
       onError(error: AxiosResponse) {
-        message.error(error?.data ?? "Unknown error")
+        message.error(error?.data ?? "未知错误")
       },
     }
   )
@@ -136,9 +216,10 @@ export default function Channels() {
       defaultQueryClient.invalidateQueries("channelList")
     },
     onError(error: AxiosResponse) {
-      message.error(error?.data ?? "Unknown error")
+      message.error(error?.data ?? "未知错误")
     },
   })
+
 
   const doUpdateChannel = useMutation(
     (ci: ChannelInfo) =>
@@ -152,7 +233,7 @@ export default function Channels() {
         defaultQueryClient.invalidateQueries("channelList")
       },
       onError(error: AxiosResponse) {
-        message.error(error?.data ?? "Unknown error")
+        message.error(error?.data ?? "未知错误")
       },
     }
   )
@@ -211,13 +292,28 @@ export default function Channels() {
     setDialogMode("edit")
     setDialogShow(true)
   }, [])
-
+  
+  const handleBatchDelete = () => {
+    Modal.confirm({
+      title: "批量删除频道",
+      content: '你真的想删除选中的频道吗?',
+      okText: "删除",
+      cancelText: "取消",
+      okType: "danger",
+      onOk() {
+        selectedRowKeys.forEach(id => {
+          doDeleteChannel.mutate(id.toString())
+        })
+        setSelectedRowKeys([])
+      },
+    })
+  }
   const handleDeleteChannel = useCallback((ch: ChannelInfo) => {
     Modal.confirm({
-      title: "Delete channel",
-      content: 'Do you want to delete the channel "' + ch.Name + '" permanently?',
-      okText: "Delete",
-      cancelText: "Cancel",
+      title: "删除频道",
+      content: '你真的想删除 "' + ch.Name + '" 吗?',
+      okText: "删除",
+      cancelText: "取消",
       okType: "danger",
       onOk() {
         doDeleteChannel.mutate(ch.ID)
@@ -238,33 +334,37 @@ export default function Channels() {
   }, [handleEditChannel, handleDeleteChannel])
 
   return (
-    <div className={styles.container}>
+    <ConfigProvider locale={zhCN}>
+      <div className={styles.container}>
       <h1 className={styles.title}>
         <Space>
-          LiveTV! <small>IPTV feeds on your hand</small>
+          LiveTV! <small>定制你自己的IPTV</small>
           <SettingOutlined style={{ fontSize: "16px" }} onClick={() => setOptionShow(true)} />
         </Space>
       </h1>
       <div className={styles.toolbar}>
         <div className={classNames([styles.playlist, "flex"])}>
-          <span>Playlist:&nbsp;&nbsp;</span>
+          <span>列表url:&nbsp;&nbsp;</span>
           <Space.Compact style={{ flex: "1 1 99%" }}>
             <Input value={playlistUrl} readOnly />
-            <Tooltip title={copied ? "Copied" : "Click to copy"}>
+            <Tooltip title={copied ? "已复制" : "点击复制"}>
               <Button icon={<CopyOutlined />} onClick={handleCopy} />
             </Tooltip>
           </Space.Compact>
         </div>
         <div>
           <Button type="primary" onClick={handleAddChannel} style={{ marginLeft: "5px" }}>
-            New channel
+            新增频道
+          </Button>
+          <Button type="primary" danger onClick={handleBatchDelete} disabled={!hasSelected} style={{ marginLeft: "5px" }}>
+            批量删除
           </Button>
         </div>
       </div>
       <Table
         size="middle"
         locale={{
-          emptyText: <div style={{ textAlign: "center" }}>No channels yet</div>,
+          emptyText: <div style={{ textAlign: "center" }}>还没添加过频道哦！</div>,
         }}
         scroll={{ x: "100%" }}
         rowKey={"ID"}
@@ -275,7 +375,10 @@ export default function Channels() {
           defaultPageSize: 20,
           pageSizeOptions: [10, 20, 50, 100],
           showSizeChanger: true,
+          
         }}
+        rowSelection={rowSelection}
+        
       />
       {/** dialogs */}
       <NewChannelDialog
@@ -287,5 +390,7 @@ export default function Channels() {
       />
       <Option visible={optionShow} onClose={() => setOptionShow(false)} />
     </div>
+      </ConfigProvider>
+    
   )
 }

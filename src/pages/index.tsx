@@ -2,6 +2,7 @@ import { api } from "@/modules/axios.config";
 import { useEffect } from "react";
 import { history } from "umi";
 
+
 export default function HomePage() {
   useEffect(() => {
     api.get("/auth").then(() => {
@@ -12,7 +13,6 @@ export default function HomePage() {
   }, [])
 
   return (
-    <div>
-    </div>
+    <div></div>
   );
 }

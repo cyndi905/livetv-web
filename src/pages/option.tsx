@@ -32,23 +32,23 @@ export default function Option(props: optProps) {
       <Form.Item name="cmd" label="yt-dlp Cmd" rules={[{ required: true }]}>
         <Input placeholder="yt-dlp" />
       </Form.Item>
-      <Form.Item name="args" label="yt-dlp Args" rules={[{ required: true }]}>
+      <Form.Item name="args" label="yt-dlp 参数" rules={[{ required: true }]}>
         <Input placeholder="--extractor-args youtube:skip=dash -f b -g {url}" />
       </Form.Item>
       <Form.Item name="baseurl" label="BaseUrl" rules={[{ required: true }]}>
         <Input
           placeholder={window.location.origin}
           suffix={
-            <Tooltip title="Autofill with current site">
+            <Tooltip title="填入当前地址">
               <ThunderboltOutlined onClick={handleAutoFillHost} />
             </Tooltip>
           }
         />
       </Form.Item>
-      <Form.Item name="secret" label="Server secret">
+      <Form.Item name="secret" label="服务器凭证">
         <Input
           suffix={
-            <Tooltip title="Randomize">
+            <Tooltip title="随机生成">
               <BulbOutlined onClick={handleRandomizeSecret} />
             </Tooltip>
           }
@@ -62,10 +62,10 @@ export default function Option(props: optProps) {
 
   const PwdMgr = () => (
     <Form labelCol={{ span: 7 }} form={pwdForm}>
-      <Form.Item name="password" label="New Password" rules={[{ required: true, message: "Input your password" }]}>
+      <Form.Item name="password" label="新密码" rules={[{ required: true, message: "输入新密码" }]}>
         <Input type="password" />
       </Form.Item>
-      <Form.Item name="password2" label="Repeat Password" rules={[{ required: true, message: "Repeat your password" }]}>
+      <Form.Item name="password2" label="重复密码" rules={[{ required: true, message: "重新输入一次" }]}>
         <Input type="password" />
       </Form.Item>
     </Form>
@@ -80,13 +80,16 @@ export default function Option(props: optProps) {
         Forked by <a href="https://github.com/snowie2000">snowie2000</a>
       </div>
       <div>
+        Translated by <a href="https://github.com/cyndi905">cyndi905</a>
+      </div>
+      <div>
         Made with <span style={{ color: "#e25555" }}>♥</span> in Kwangtung.
       </div>
       <div>
         <a href="/log" target="_blank">
-          View log
+          查看日志
         </a>
-        &nbsp;&nbsp;&nbsp;|&nbsp;&nbsp;&nbsp;<a onClick={() => doLogout.mutate()}>Log out</a>
+        &nbsp;&nbsp;&nbsp;|&nbsp;&nbsp;&nbsp;<a onClick={() => doLogout.mutate()}>登出</a>
       </div>
     </div>
   )
@@ -156,7 +159,7 @@ export default function Option(props: optProps) {
           .validateFields()
           .then((values) => {
             if (values.password !== values.password2) {
-              message.warning("Passwords do not match")
+              message.warning("两次输入密码不一致")
               return Promise.reject()
             } else {
               return doChangePassword.mutateAsync(values)
@@ -177,24 +180,24 @@ export default function Option(props: optProps) {
 
   const tabs: TabsProps["items"] = [
     {
-      label: "Config",
+      label: "配置",
       key: "config",
       children: <ConfigMgr />,
     },
     {
-      label: "Password",
+      label: "密码",
       key: "password",
       children: <PwdMgr />,
     },
     {
-      label: "About",
+      label: "关于",
       key: "about",
       children: <About />,
     },
   ]
 
   return (
-    <Modal title="Options" open={props.visible} onCancel={props.onClose} onOk={handleOk} destroyOnClose={true}>
+    <Modal title="系统配置" open={props.visible} onCancel={props.onClose} onOk={handleOk} destroyOnClose={true} okText="确定" cancelText="取消">
       <Tabs items={tabs} defaultActiveKey="config" activeKey={activeTab} onChange={setActiveTab} />
     </Modal>
   )

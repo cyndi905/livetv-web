@@ -1,10 +1,11 @@
 import { api } from "@/modules/axios.config"
-import { AutoComplete, Checkbox, Form, Input, InputRef, Modal, Select, Space } from "antd"
+import { AutoComplete, Checkbox, Form, Input, InputRef, Modal, Select } from "antd"
 import { useEffect, useMemo, useRef, useState } from "react"
 import { useQuery } from "react-query"
 import styles from "./NewChannelDialog.less"
 import { BaseOptionType } from "antd/es/select"
 import { defaultQueryClient } from "./ReactQueryClientProvider"
+const { TextArea } = Input
 
 export interface ChannelInfo {
   No: number
@@ -104,38 +105,44 @@ export default function NewChannelDialog(props: dlgProps) {
       destroyOnClose={true}
       maskClosable={false}
       confirmLoading={busy}
-      title={props.mode === "add" ? "New Channel" : "Edit Channel"}
+      title={props.mode === "add" ? "添加频道" : "编辑频道"}
+      okText="确定"
+      cancelText="取消"
     >
       <div style={{ marginTop: 20 }}>
         <Form labelCol={{ span: 6 }} form={form} onValuesChange={handleValuesChange}>
           <Form.Item name="ID" hidden />
-          <Form.Item label="Channel Name" name="Name" rules={[{ required: true }]}>
-            <Input placeholder="Channel name" allowClear />
+          <Form.Item label="频道名" name="Name" rules={[{ required: true }]}>
+            <Input placeholder="频道名" allowClear />
           </Form.Item>
-          <Form.Item label="Live URL" name="URL" rules={[{ required: true }]}>
-            <Input placeholder="URL" allowClear />
+          <Form.Item label="源地址" name="URL" rules={[{ required: true }]}>
+          {props.mode === "add" ? (
+          <TextArea placeholder="支持导入多个源，请以“#”隔开，例如：https://example1.com #https://example2.com" allowClear />
+        ) : (
+          <Input placeholder="URL" allowClear />
+        )}
           </Form.Item>
-          <Form.Item label="Parser" name="Parser" rules={[{ required: true }]}>
-            <Select placeholder="URL" options={parsers} />
+          <Form.Item label="解析器" name="Parser" rules={[{ required: true }]}>
+            <Select placeholder="" options={parsers} />
           </Form.Item>
-          <Form.Item label="Category" name="Category">
+          <Form.Item label="分组" name="Category">
             <AutoComplete
-              placeholder="Select or type new category names"
+              placeholder="选择或输入一个新分组"
               options={filteredCategory}
               onSearch={setCategoryVal}
             />
           </Form.Item>
-          <Form.Item label="Proxy stream" name="Proxy">
+          <Form.Item label="串流代理" name="Proxy">
             <Select optionLabelProp="title" defaultValue={"0"}>
-              <Option value="0" title="No proxy">
-                No proxy
+              <Option value="0" title="无代理">
+              无代理
               </Option>
-              <Option value="1" title="Same as baseurl">
-                Same as baseurl
+              <Option value="1" title="与baseurl相同">
+                与baseurl相同
               </Option>
-              <Option value="2" title={"Custom: " + customTsProxy}>
+              <Option value="2" title={"自定义: " + customTsProxy}>
                 <div className={styles.TsProxySelector}>
-                  <span>Custom:</span>
+                  <span>自定义:</span>
                   <Input
                     ref={inputRef}
                     onClick={(e) => {
@@ -153,10 +160,10 @@ export default function NewChannelDialog(props: dlgProps) {
               </Option>
             </Select>
           </Form.Item>
-          <Form.Item label="Use Proxy" name="UseProxy" valuePropName="checked">
+          <Form.Item label="使用代理" name="UseProxy" valuePropName="checked">
             <Checkbox />
           </Form.Item>
-          <Form.Item label="Proxy string" name="ProxyUrl" hidden={!needProxy}>
+          <Form.Item label="代理url" name="ProxyUrl" hidden={!needProxy}>
             <Input placeholder="socks5://user:password@example.com:443" />
           </Form.Item>
         </Form>

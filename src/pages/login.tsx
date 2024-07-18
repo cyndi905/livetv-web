@@ -39,7 +39,7 @@ export default function Login() {
   }
 
   useEffect(() => {
-    document.title = "Login - LiveTV!"
+    document.title = "登录 - LiveTV!"
     loadOTP()
   }, [])
 
@@ -72,7 +72,7 @@ export default function Login() {
       onError(error: AxiosResponse, variables, context) {
         form.setFieldValue("answer", "")
         loadOTP()
-        message.error(error?.data ?? "Unknown error")
+        message.error(error?.data ?? "未知错误")
       },
     }
   )
@@ -87,10 +87,10 @@ export default function Login() {
         <Card className={styles.loginCard} bordered={false}>
           <h2>LiveTV</h2>
           <Form onFinish={handleFormSubmit} form={form} spellCheck={false} initialValues={{ answer: "" }}>
-            <Form.Item name="password" rules={[{ required: true, message: "Please input your password" }]}>
-              <Input placeholder="Password" allowClear type="password" />
+            <Form.Item name="密码" rules={[{ required: true, message: "请输入密码" }]}>
+              <Input placeholder="输入密码" allowClear type="password" />
             </Form.Item>
-            <Form.Item name="answer" rules={[{ required: true, message: "Please enter the captcha" }]}>
+            <Form.Item name="验证码" rules={[{ required: true, message: "请输入验证码" }]}>
               <WithProps
                 content={(props: any) => (
                   <div style={{ position: "relative" }}>
@@ -98,7 +98,7 @@ export default function Login() {
                     <Input className={styles.answer} maxLength={4} {...props} />
                     <div className={styles.btnSubmit}>
                       <Button loading={doSubmit.isLoading} type="primary" size="middle" htmlType="submit">
-                        Login
+                        登录
                       </Button>
                     </div>
                   </div>
