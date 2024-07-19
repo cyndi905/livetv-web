@@ -87,10 +87,10 @@ export default function Login() {
         <Card className={styles.loginCard} bordered={false}>
           <h2>LiveTV</h2>
           <Form onFinish={handleFormSubmit} form={form} spellCheck={false} initialValues={{ answer: "" }}>
-            <Form.Item name="密码" rules={[{ required: true, message: "请输入密码" }]}>
+            <Form.Item name="password" rules={[{ required: true, message: "请输入密码" }]}>
               <Input placeholder="输入密码" allowClear type="password" />
             </Form.Item>
-            <Form.Item name="验证码" rules={[{ required: true, message: "请输入验证码" }]}>
+            <Form.Item name="answer" rules={[{ required: true, message: "请输入验证码" }]}>
               <WithProps
                 content={(props: any) => (
                   <div style={{ position: "relative" }}>
