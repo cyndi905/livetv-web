@@ -176,6 +176,7 @@ export default function Channels() {
   const [optionShow, setOptionShow] = useState(false)
   const [dialogMode, setDialogMode] = useState<"add" | "edit">("add")
   const [playlistUrl, setPlayListUrl] = useState("")
+  const [playlistTxtUrl, setPlayListTxtUrl] = useState("")
   const [copied, setCopied] = useState(false)
   const [editingChannel, setEditingChannel] = useState<ChannelInfo>()
   const [selectedRowKeys, setSelectedRowKeys] = useState<React.Key[]>([]);
@@ -253,6 +254,7 @@ const hasSelected = selectedRowKeys.length > 0
               ch.No = idx
             })
             setPlayListUrl(list.shift()!.M3U8)
+            setPlayListTxtUrl(list.shift()!.M3U8)
           }
           return list ?? []
         }),
@@ -273,9 +275,17 @@ const hasSelected = selectedRowKeys.length > 0
   }
 
   // copy m3u8 playlist to clipboard
-  function handleCopy() {
+  function handleCopyM3u(){
+    handleCopy(playlistUrl)
+  }
+
+  function handleCopyTxt(){
+    handleCopy(playlistTxtUrl)
+  }
+
+  function handleCopy(text: string) {
     navigator.clipboard
-      .writeText(playlistUrl)
+      .writeText(text)
       .then(() => {
         setCopied(true)
         setTimeout(() => {
@@ -344,11 +354,20 @@ const hasSelected = selectedRowKeys.length > 0
       </h1>
       <div className={styles.toolbar}>
         <div className={classNames([styles.playlist, "flex"])}>
-          <span>列表url:&nbsp;&nbsp;</span>
-          <Space.Compact style={{ flex: "1 1 99%" }}>
+          <span>m3u列表:&nbsp;&nbsp;</span>
+          <Space.Compact style={{ flex: "1" }}>
             <Input value={playlistUrl} readOnly />
             <Tooltip title={copied ? "已复制" : "点击复制"}>
-              <Button icon={<CopyOutlined />} onClick={handleCopy} />
+              <Button icon={<CopyOutlined />} onClick={handleCopyM3u} />
+            </Tooltip>
+          </Space.Compact>
+        </div>
+        <div className={classNames([styles.playlist, "flex"])}>
+          <span>txt列表:&nbsp;&nbsp;</span>
+          <Space.Compact style={{ flex: "1" }}>
+            <Input value={playlistTxtUrl} readOnly />
+            <Tooltip title={copied ? "已复制" : "点击复制"}>
+              <Button icon={<CopyOutlined />} onClick={handleCopyTxt} />
             </Tooltip>
           </Space.Compact>
         </div>
