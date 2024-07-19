@@ -188,6 +188,26 @@ const onSelectChange = (newSelectedRowKeys: React.Key[]) => {
 const rowSelection = {
   selectedRowKeys,
   onChange: onSelectChange,
+  selections: [
+    {
+      key: 'invalid',
+      text: '选择无效源',
+      onSelect: (changeableRowKeys: React.Key[]) => {
+        let newSelectedRowKeys = [];
+        newSelectedRowKeys = changeableRowKeys.filter((key) => {
+          if(channels){
+            for (let channel of channels) {
+              if (channel.ID === key && channel.Status === 3) {
+                return true;
+              }
+            }
+          }
+          return false;
+        });
+        setSelectedRowKeys(newSelectedRowKeys);
+      },
+    }
+  ]
 };
 const hasSelected = selectedRowKeys.length > 0
 
